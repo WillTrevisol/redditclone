@@ -24,7 +24,6 @@ class CommunityRepository {
 
   FutureVoid createCommunity(Community community) async {
     try {
-
       final communityDoc = await _communitites.doc(community.name).get();
 
       if (communityDoc.exists) {
@@ -32,10 +31,21 @@ class CommunityRepository {
       }
 
       return right(_communitites.doc(community.name).set(community.toMap()));
-
-
     } catch (e) {
       return left(Failure(e.toString()));
     }
+  }
+
+  Stream<List<Community>> getUserCommunities(String uid) {
+    return _communitites.where('members', arrayContains: uid).snapshots().map(
+      (event) {
+        List<Community> communities = [];
+        for (var element in event.docs) { 
+          communities.add(Community.fromMap(element.data() as Map<String, dynamic>));
+        }
+
+        return communities;
+      },
+    );
   } 
 }
