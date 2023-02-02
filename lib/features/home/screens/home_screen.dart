@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../auth/controller/auth_controller.dart';
+import '../delegate/search_community_delegate.dart';
 import '../drawers/community_list_drawer.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -11,6 +12,13 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
 
     final user = ref.watch(userProvider)!;
+
+    void showSearcher() {
+      showSearch(
+        context: context, 
+        delegate: SearchCommunityDelegate(ref: ref),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -25,7 +33,7 @@ class HomeScreen extends ConsumerWidget {
         ),
         actions: <Widget> [
           IconButton(
-            onPressed: () {}, 
+            onPressed: () => showSearcher(),
             icon: const Icon(Icons.search)
           ),
           IconButton(
