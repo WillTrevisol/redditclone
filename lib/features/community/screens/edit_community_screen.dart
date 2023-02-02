@@ -8,6 +8,7 @@ import '../../../core/common/error_text.dart';
 import '../../../core/common/loading_widget.dart';
 import '../../../core/constants/constants.dart';
 import '../../../core/utils.dart';
+import '../../../models/community.dart';
 import '../../../theme/theme.dart';
 import '../controller/community_controller.dart';
 
@@ -45,8 +46,20 @@ class _EditCommunityScreenState extends ConsumerState<EditCommunityScreen> {
     }
   }
 
+  void saveCommunity(Community community) {
+    ref.read(communityControllerProvider.notifier).editCommunity(
+      context: context, 
+      avatarFile: avatarFile, 
+      bannerFile: bannerFile, 
+      community: community,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+
+    final isLoading = ref.watch(communityControllerProvider);
+
     return ref.watch(getCommunityByNameProvider(widget.name)).when(
       data: (data) => Scaffold(
         backgroundColor: Pallete.darkModeAppTheme.appBarTheme.backgroundColor,
@@ -55,12 +68,12 @@ class _EditCommunityScreenState extends ConsumerState<EditCommunityScreen> {
           centerTitle: false,
           actions: <Widget> [
             TextButton(
-              onPressed: () {}, 
+              onPressed: isLoading ? null : () => saveCommunity(data),
               child: const Text('Save'),
             ),
           ],
         ),
-        body: Padding(
+        body: isLoading ? const LoadingWidget() : Padding(
           padding: const EdgeInsets.all(12.0),
           child: Column(
             children: <Widget> [
