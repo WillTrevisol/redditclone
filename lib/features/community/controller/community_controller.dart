@@ -18,6 +18,10 @@ final communityControllerProvider = StateNotifierProvider<CommunityController, b
   ),
 );
 
+final getCommunityByNameProvider = StreamProvider.family(
+  (ref, String name) => ref.watch(communityControllerProvider.notifier).getCommunityByName(name),
+);
+
 class CommunityController extends StateNotifier<bool> {
 
   final CommunityRepository _communityRepository;
@@ -61,4 +65,6 @@ class CommunityController extends StateNotifier<bool> {
 
     return _communityRepository.getUserCommunities(userUid);
   }
+
+  Stream<Community> getCommunityByName(String name) => _communityRepository.getCommunityByName(name);
 }
