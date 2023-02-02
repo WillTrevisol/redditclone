@@ -57,6 +57,8 @@
 				<string>com.googleusercontent.apps.36183659684-6rtmfvc2de8qqeckk2js10n2ghmsaf9o</string>
 			</array>
 		</dict>
-</array>
+	</array>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need access for you select an image.</string>
 </dict>
 </plist>
