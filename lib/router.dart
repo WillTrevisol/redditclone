@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:routemaster/routemaster.dart';
 
+import 'features/community/screens/add_moderator_screen.dart';
 import 'features/community/screens/community_screen.dart';
 import 'features/community/screens/create_community_screen.dart';
 import 'features/community/screens/edit_community_screen.dart';
@@ -18,4 +19,5 @@ final loggedInRoute = RouteMap(routes: {
   '/r/:name': (RouteData route) => MaterialPage(child: CommunityScreen(name: route.pathParameters['name']!)),
   '/moderator-tools/:name': (RouteData route) => MaterialPage(child: ModeratorToolsScreen(name: route.pathParameters['name']!)),
   '/edit-community/:name': (RouteData route) => MaterialPage(child: EditCommunityScreen(name: route.pathParameters['name']!)),
+  '/add-moderators/:name': (RouteData route) => MaterialPage(child: AddModeratorScreen(communityName: route.pathParameters['name']!)),
 });

@@ -4,6 +4,7 @@ import 'package:routemaster/routemaster.dart';
 
 import '../../../core/common/error_text.dart';
 import '../../../core/common/loading_widget.dart';
+import '../../../models/community.dart';
 import '../../auth/controller/auth_controller.dart';
 import '../controller/community_controller.dart';
 
@@ -20,6 +21,10 @@ class CommunityScreen extends ConsumerWidget {
 
     void navigateToModeratorTools() {
       Routemaster.of(context).push('/moderator-tools/$name');
+    }
+
+    void joinOrLeaveCommunity(BuildContext context, WidgetRef ref, Community community) {
+      ref.read(communityControllerProvider.notifier).joinOrLeftCommunity(context, community);
     }
 
     return Scaffold(
@@ -77,7 +82,7 @@ class CommunityScreen extends ConsumerWidget {
                               child: const Text('Moderator Tools'),
                             )
                           : OutlinedButton(
-                              onPressed: (){},
+                              onPressed: () => joinOrLeaveCommunity(context, ref, data),
                               style: OutlinedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(horizontal: 25),
                                 side: BorderSide(

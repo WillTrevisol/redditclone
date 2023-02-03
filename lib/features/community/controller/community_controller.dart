@@ -2,10 +2,12 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:redditclone/models/community.dart';
 import 'package:routemaster/routemaster.dart';
 
 import '../../../core/constants/constants.dart';
+import '../../../core/failure.dart';
 import '../../../core/providers/storage_repository_provider.dart';
 import '../../../core/utils.dart';
 import '../../auth/controller/auth_controller.dart';
@@ -71,6 +73,28 @@ class CommunityController extends StateNotifier<bool> {
     );
   }
 
+  Future<void> joinOrLeftCommunity(BuildContext context, Community community) async {
+    final user = _ref.read(userProvider)!;
+    Either<Failure, void> response;
+
+    if (community.members.contains(user.uid)) {
+      response = await _communityRepository.leaveCommunity(community.name, user.uid);
+    } else {
+      response = await _communityRepository.joinCommunity(community.name, user.uid);
+    }
+
+    response.fold(
+      (left) => showSnackBar(context, left.message), 
+      (right) {
+        if (community.members.contains(user.uid)) {
+          showSnackBar(context, 'Left the community!');
+        } else {
+          showSnackBar(context, 'Joined community!');
+        }
+      },
+    );
+  }
+
   Stream<List<Community>> getUserCommunities() {
     final userUid = _ref.read(userProvider)!.uid;
 
@@ -113,6 +137,15 @@ class CommunityController extends StateNotifier<bool> {
 
     final response = await _communityRepository.editCommunity(community);
     state = false;
+    response.fold(
+      (left) => showSnackBar(context, left.message), 
+      (right) => Routemaster.of(context).pop(),
+    );
+  }
+
+  void addModerators(BuildContext context, String communityName, List<String> moderatorsUids) async {
+    final response = await _communityRepository.addModerators(communityName, moderatorsUids);
+
     response.fold(
       (left) => showSnackBar(context, left.message), 
       (right) => Routemaster.of(context).pop(),

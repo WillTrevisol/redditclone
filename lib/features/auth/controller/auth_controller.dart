@@ -21,7 +21,7 @@ final authUserStateChangesProvider = StreamProvider(
 );
 
 final getUserDataProvider = StreamProvider.family(
-  (ref, String uid) => ref.watch(authControllerProvider.notifier).getUserData(uid),
+  (StreamProviderRef ref, String uid) => ref.watch(authControllerProvider.notifier).getUserData(uid),
 );
 
 class AuthController extends StateNotifier<bool> {
@@ -51,5 +51,9 @@ class AuthController extends StateNotifier<bool> {
 
   Stream<UserModel> getUserData(String uid) {
     return _authRepository.getUserData(uid);
+  }
+
+  Future<void> logOut() async {
+    await _authRepository.logOut();
   }
 }

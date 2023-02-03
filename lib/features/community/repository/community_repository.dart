@@ -36,6 +36,30 @@ class CommunityRepository {
     }
   }
 
+  FutureVoid joinCommunity(String communityName, String userUid) async {
+    try {
+      return right (_communitites.doc(communityName)
+        .update({
+          'members': FieldValue.arrayUnion([userUid]),
+        }),
+      );
+    } catch (e) {
+      return left(Failure(e.toString()));
+    }
+  }
+
+  FutureVoid leaveCommunity(String communityName, String userUid) async {
+    try {
+      return right (_communitites.doc(communityName)
+        .update({
+          'members': FieldValue.arrayRemove([userUid]),
+        }),
+      );
+    } catch (e) {
+      return left(Failure(e.toString()));
+    }
+  }
+
   Stream<List<Community>> getUserCommunities(String uid) {
     return _communitites.where('members', arrayContains: uid).snapshots().map(
       (event) {
@@ -55,6 +79,16 @@ class CommunityRepository {
   FutureVoid editCommunity(Community community) async {
     try {
       return right(_communitites.doc(community.name).update(community.toMap()));
+    } catch (e) {
+      return left(Failure(e.toString()));
+    }
+  }
+
+  FutureVoid addModerators(String communtyName, List<String> moderatorsUids) async {
+    try {
+      return right(_communitites.doc(communtyName).update({
+        'moderators': moderatorsUids,
+      }));
     } catch (e) {
       return left(Failure(e.toString()));
     }
