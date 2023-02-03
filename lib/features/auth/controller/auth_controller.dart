@@ -17,11 +17,17 @@ final authControllerProvider = StateNotifierProvider<AuthController, bool>(
 );
 
 final authUserStateChangesProvider = StreamProvider(
-  (StreamProviderRef ref) => ref.watch(authControllerProvider.notifier).authStateChanges,
+  (StreamProviderRef ref) {
+    final authController = ref.watch(authControllerProvider.notifier);
+    return authController.authStateChanges;
+  },
 );
 
 final getUserDataProvider = StreamProvider.family(
-  (StreamProviderRef ref, String uid) => ref.watch(authControllerProvider.notifier).getUserData(uid),
+  (StreamProviderRef ref, String uid) {
+    final authController = ref.watch(authControllerProvider.notifier);
+    return authController.getUserData(uid);
+  }
 );
 
 class AuthController extends StateNotifier<bool> {

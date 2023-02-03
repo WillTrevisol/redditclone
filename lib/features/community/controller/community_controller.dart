@@ -16,20 +16,28 @@ import '../repository/community_repository.dart';
 final userCommunitiesProvider = StreamProvider(
   (StreamProviderRef ref) => ref.watch(communityControllerProvider.notifier).getUserCommunities());
 
-final communityControllerProvider = StateNotifierProvider<CommunityController, bool>(
-  (StateNotifierProviderRef ref) => CommunityController(
-    communityRepository: ref.watch(communityRepositoryProvider), 
+final communityControllerProvider = StateNotifierProvider<CommunityController, bool>((ref) {
+  final communityRepository = ref.watch(communityRepositoryProvider);
+  final storageRepository = ref.watch(storageRepositoryProvider);
+  return CommunityController(
+    communityRepository: communityRepository,
+    storageRepository: storageRepository,
     ref: ref,
-    storageRepository: ref.watch(storageRepositoryProvider),
-  ),
-);
+  );
+});
 
 final getCommunityByNameProvider = StreamProvider.family(
-  (StreamProviderRef ref, String name) => ref.watch(communityControllerProvider.notifier).getCommunityByName(name),
+  (StreamProviderRef ref, String name) {
+    final communityController = ref.watch(communityControllerProvider.notifier);
+    return communityController.getCommunityByName(name);
+  },
 );
 
 final searchCommunityProvider = StreamProvider.family(
-  (StreamProviderRef ref, String query) => ref.watch(communityControllerProvider.notifier).searchCommunity(query),
+  (StreamProviderRef ref, String query) {
+    final communityController = ref.watch(communityControllerProvider.notifier);
+    return communityController.searchCommunity(query);
+  }
 );
 
 class CommunityController extends StateNotifier<bool> {

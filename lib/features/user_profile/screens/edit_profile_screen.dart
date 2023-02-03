@@ -8,23 +8,36 @@ import '../../../core/common/error_text.dart';
 import '../../../core/common/loading_widget.dart';
 import '../../../core/constants/constants.dart';
 import '../../../core/utils.dart';
-import '../../../models/community.dart';
 import '../../../theme/theme.dart';
-import '../controller/community_controller.dart';
+import '../../auth/controller/auth_controller.dart';
+import '../controller/user_profile_controller.dart';
 
-class EditCommunityScreen extends ConsumerStatefulWidget {
+class EditProfileScreen extends ConsumerStatefulWidget {
+  const EditProfileScreen({super.key, required this.uid});
 
-  final String name;
-  const EditCommunityScreen({super.key, required this.name});
+  final String uid;
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _EditCommunityScreenState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _EditProfileScreenState();
 }
 
-class _EditCommunityScreenState extends ConsumerState<EditCommunityScreen> {
+class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   File? bannerFile;
-  File? avatarFile;
+  File? profileFile;
+  late TextEditingController nameController;
+
+  @override
+  void initState() {
+    super.initState();
+    nameController = TextEditingController(text: ref.read(userProvider)!.name);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    nameController.dispose();
+  }
 
   void selectBannerImage() async {
     final result = await pickImage();
@@ -41,34 +54,34 @@ class _EditCommunityScreenState extends ConsumerState<EditCommunityScreen> {
 
     if (result != null) {
       setState(() {
-        avatarFile = File(result.paths.first ?? '');
+        profileFile = File(result.paths.first ?? '');
       });
     }
   }
 
-  void saveCommunity(Community community) {
-    ref.read(communityControllerProvider.notifier).editCommunity(
+  void saveProfile() {
+    ref.read(userProfileControllerProvider.notifier).editUserProfile(
       context: context, 
-      avatarFile: avatarFile, 
-      bannerFile: bannerFile, 
-      community: community,
+      profilePicture: profileFile,
+      bannerFile: bannerFile,
+      name: nameController.text,
     );
   }
 
   @override
   Widget build(BuildContext context) {
 
-    final isLoading = ref.watch(communityControllerProvider);
-
-    return ref.watch(getCommunityByNameProvider(widget.name)).when(
+    final isLoading = ref.watch(userProfileControllerProvider);
+    
+    return ref.watch(getUserDataProvider(widget.uid)).when(
       data: (data) => Scaffold(
         backgroundColor: Pallete.darkModeAppTheme.appBarTheme.backgroundColor,
         appBar: AppBar(
-          title: const Text('Edit Community'),
+          title: const Text('Edit Profile'),
           centerTitle: false,
           actions: <Widget> [
             TextButton(
-              onPressed: isLoading ? null : () => saveCommunity(data),
+              onPressed: isLoading ? null : () => saveProfile(),
               child: const Text('Save'),
             ),
           ],
@@ -112,18 +125,33 @@ class _EditCommunityScreenState extends ConsumerState<EditCommunityScreen> {
                       left: 20,
                       child: GestureDetector(
                         onTap: selectAvatarImage,
-                        child: avatarFile != null 
+                        child: profileFile != null 
                         ? CircleAvatar(
-                            backgroundImage: FileImage(avatarFile!),
+                            backgroundImage: FileImage(profileFile!),
                             radius: 32,
                           )
                         : CircleAvatar(
-                          backgroundImage: NetworkImage(data.avatar),
+                          backgroundImage: NetworkImage(data.profilePicture),
                           radius: 32,
                         ),
                       ),
                     ),
                   ],
+                ),
+              ),
+              TextField(
+                controller: nameController,
+                decoration: InputDecoration(
+                  hintText: 'u/Name',
+                  filled: true,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(25),
+                    borderSide: const BorderSide(
+                      width: 0,
+                      style: BorderStyle.none
+                    )
+                  ),
+                  contentPadding: const EdgeInsets.all(18)
                 ),
               ),
             ],
