@@ -1,3 +1,4 @@
+import 'package:animated_toggle_switch/animated_toggle_switch.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:routemaster/routemaster.dart';
@@ -64,9 +65,29 @@ class ProfileDrawer extends ConsumerWidget {
               title: const  Text('Logout'),
               onTap: () => logOut(ref),
             ),
-            Switch.adaptive(
-              value: ref.watch(themeNotifierProvider.notifier).themeMode == ThemeMode.dark, 
-              onChanged: (bool value) => toggleTheme(ref),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget> [
+                AnimatedToggleSwitch.dual(
+                  current: ref.watch(themeNotifierProvider.notifier).themeMode == ThemeMode.dark, 
+                  first: false, 
+                  second: true,
+                  dif: 25,
+                  height: 50,
+                  borderColor: Colors.transparent,
+                  onChanged: (bool value) => toggleTheme(ref),
+                  iconBuilder: (bool value) => value 
+                  ? const Icon(
+                    Icons.dark_mode_rounded,
+                    color: Pallete.blackColor,
+                  ) 
+                  : const Icon(
+                    Icons.light_mode_rounded,
+                    color: Pallete.whiteColor,
+                  ),
+                  colorBuilder: (bool value) => value ? Pallete.whiteColor.withAlpha(200) : Pallete.greyColor.withAlpha(200),
+                ),
+              ],
             ),
           ],
         ),
