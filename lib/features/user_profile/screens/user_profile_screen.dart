@@ -4,7 +4,9 @@ import 'package:routemaster/routemaster.dart';
 
 import '../../../core/common/error_text.dart';
 import '../../../core/common/loading_widget.dart';
+import '../../../core/common/post_card.dart';
 import '../../auth/controller/auth_controller.dart';
+import '../controller/user_profile_controller.dart';
 
 class UserProfileScreen extends ConsumerWidget {
 
@@ -17,6 +19,8 @@ class UserProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+
+  final user = ref.watch(userProvider)!;
 
     return Scaffold(
       body: ref.watch(getUserDataProvider(uid)).when(
@@ -43,20 +47,21 @@ class UserProfileScreen extends ConsumerWidget {
                         radius: 45,
                       ),
                     ),
-                    Container(
-                      alignment: Alignment.bottomLeft,
-                      padding: const EdgeInsets.all(20),
-                      child: OutlinedButton(
-                        onPressed: () => navigateToEditProfile(context, uid),
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 25),
-                          side: BorderSide(
-                            color: Colors.grey.shade700
-                          )
+                    if (uid == user.uid)
+                      Container(
+                        alignment: Alignment.bottomLeft,
+                        padding: const EdgeInsets.all(20),
+                        child: OutlinedButton(
+                          onPressed: () => navigateToEditProfile(context, uid),
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 25),
+                            side: BorderSide(
+                              color: Colors.grey.shade700
+                            )
+                          ),
+                          child: const Text('Edit profile'),
                         ),
-                        child: const Text('Edit profile'),
                       ),
-                    ),
                   ],
                 ),
               ),
@@ -89,7 +94,20 @@ class UserProfileScreen extends ConsumerWidget {
               ),
             ];
           }, 
-          body: const Text('Displaying posts.'),
+          body: ref.watch(getUserPostsProvider(uid)).when(
+            data: (posts) {
+              return ListView.builder(
+                itemCount: posts.length,
+                itemBuilder: (context, index) {
+                  final post = posts[index];
+
+                  return PostCard(post: post);
+                },
+              );
+            }, 
+            error: (error, stackTrace) => ErrorText(message: error.toString()),
+            loading: () => const LoadingWidget(),
+          ),
         ), 
         error: (error, stackTrace) => ErrorText(message: error.toString()), 
         loading: () => const LoadingWidget(),

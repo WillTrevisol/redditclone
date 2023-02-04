@@ -7,6 +7,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../../core/providers/storage_repository_provider.dart';
 import '../../../core/utils.dart';
+import '../../../models/comment.dart';
 import '../../../models/community.dart';
 import '../../../models/post.dart';
 import '../../auth/controller/auth_controller.dart';
@@ -30,6 +31,18 @@ final fetchUserPostsProvider = StreamProvider.family(
     return postController.fetchUserPosts(communities);
   }
 );
+
+final getPostByIdProvider = StreamProvider.family(
+  (StreamProviderRef ref, String postId) {
+    final postController = ref.watch(postControllerProvider.notifier);
+    return postController.getPostById(postId);
+});
+
+final getPostCommentsProvider = StreamProvider.family(
+  (StreamProviderRef ref, String postId) {
+    final postController = ref.watch(postControllerProvider.notifier);
+    return postController.fetchPostComments(postId);
+});
 
 class PostController extends StateNotifier<bool>{
   final PostRepository _postRepository;
@@ -197,5 +210,39 @@ class PostController extends StateNotifier<bool>{
   void downVote(Post post) async {
     final userUid = _ref.read(userProvider)!.uid;
     _postRepository.downvote(post, userUid);
+  }
+
+  Stream<Post> getPostById(String postId) {
+    return _postRepository.getPostById(postId);
+  }
+
+  void addComment({
+    required BuildContext context, 
+    required String text,
+    required String postId
+  }) async {
+
+    final user = _ref.read(userProvider)!;
+    final uid = const Uuid().v1();
+
+    final Comment comment = Comment(
+      id: uid, 
+      text: text, 
+      createdAt: DateTime.now(), 
+      postId: postId, 
+      userName: user.name, 
+      userProfilePicture: user.profilePicture,
+    );
+
+    final response = await _postRepository.addComment(comment);
+
+    response.fold(
+      (left) => showSnackBar(context, left.message), 
+      (right) => null,
+    );
+  }
+
+   Stream<List<Comment>> fetchPostComments(String postId) {
+    return _postRepository.getCommentsOfPost(postId);
   }
 }

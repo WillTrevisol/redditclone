@@ -6,6 +6,7 @@ import '../../../core/constants/firebase_constants.dart';
 import '../../../core/failure.dart';
 import '../../../core/providers/firebase_providers.dart';
 import '../../../core/typedefs.dart';
+import '../../../models/comment.dart';
 import '../../../models/community.dart';
 import '../../../models/post.dart';
 
@@ -21,6 +22,7 @@ class PostRepository {
   }) : _firebaseFirestore = firebaseFirestore;
 
   CollectionReference get _posts => _firebaseFirestore.collection(FirebaseConstants.postsCollection);
+  CollectionReference get _comments => _firebaseFirestore.collection(FirebaseConstants.commentsCollection);
 
   FutureVoid addPost(Post post) async {
     try {
@@ -80,6 +82,27 @@ class PostRepository {
         'downVotes': FieldValue.arrayUnion([userUid]),
       });
     }
+  }
+
+  Stream<Post> getPostById(String postId) {
+    return _posts.doc(postId).snapshots().map((event) => Post.fromMap(event.data() as Map<String, dynamic>));
+  }
+
+  FutureVoid addComment(Comment comment) async {
+    try {
+      await _comments.doc(comment.id).set(comment.toMap());
+      return right(_posts.doc(comment.postId).set({
+        'commentCount': FieldValue.increment(1),
+      }));
+    } catch (e) {
+      return left(Failure(e.toString()));
+    }
+  }
+
+  Stream<List<Comment>> getCommentsOfPost(String postId) {
+    return _comments.where('postId', isEqualTo: postId)
+      .orderBy('createdAt', descending: true).snapshots()
+        .map((event) => event.docs.map((e) => Comment.fromMap(e.data() as Map<String, dynamic>)).toList());
   }
 
 }

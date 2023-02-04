@@ -9,6 +9,7 @@ import 'features/community/screens/moderator_tools_screen.dart';
 import 'features/home/screens/home_screen.dart';
 import 'features/auth/screens/login_screen.dart';
 import 'features/posts/screens/add_post_type_screen.dart';
+import 'features/posts/screens/comment_screen.dart';
 import 'features/user_profile/screens/edit_profile_screen.dart';
 import 'features/user_profile/screens/user_profile_screen.dart';
 
@@ -25,5 +26,6 @@ final loggedInRoute = RouteMap(routes: {
   '/add-moderators/:name': (RouteData route) => MaterialPage(child: AddModeratorScreen(communityName: route.pathParameters['name']!)),
   '/u/:uid': (RouteData route) => MaterialPage(child: UserProfileScreen(uid: route.pathParameters['uid']!)),
   '/edit-profile/:uid': (RouteData route) => MaterialPage(child: EditProfileScreen(uid: route.pathParameters['uid']!)),
-  '/add-post/:type': (RouteData route) => MaterialPage(child: AddPostTypeScreen(type: route.pathParameters['type']!))
+  '/add-post/:type': (RouteData route) => MaterialPage(child: AddPostTypeScreen(type: route.pathParameters['type']!)),
+  '/post/:postId/comments': (RouteData route) => MaterialPage(child: CommentScreen(postId: route.pathParameters['postId']!)), 
 });
