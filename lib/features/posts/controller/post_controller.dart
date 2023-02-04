@@ -24,6 +24,13 @@ final postControllerProvider = StateNotifierProvider<PostController, bool>(
   }
 );
 
+final fetchUserPostsProvider = StreamProvider.family(
+  (StreamProviderRef ref, List<Community> communities) {
+    final postController = ref.watch(postControllerProvider.notifier);
+    return postController.fetchUserPosts(communities);
+  }
+);
+
 class PostController extends StateNotifier<bool>{
   final PostRepository _postRepository;
   final Ref _ref;
@@ -163,5 +170,32 @@ class PostController extends StateNotifier<bool>{
 
       },
     );
+  }
+
+  Stream<List<Post>> fetchUserPosts(List<Community> communities) {
+    if (communities.isNotEmpty) {
+      return _postRepository.fetchUserPosts(communities);
+    }
+
+    return Stream.value([]);
+  }
+
+  void deletePost(BuildContext context, Post post) async {
+    final response = await _postRepository.deletePost(post);
+
+    response.fold(
+      (left) => showSnackBar(context, left.toString()),
+      (right) => showSnackBar(context, 'Deleted post!'),
+    );
+  }
+
+  void upVote(Post post) async {
+    final userUid = _ref.read(userProvider)!.uid;
+    _postRepository.upvote(post, userUid);
+  }
+
+  void downVote(Post post) async {
+    final userUid = _ref.read(userProvider)!.uid;
+    _postRepository.downvote(post, userUid);
   }
 }
