@@ -23,6 +23,7 @@ class PostRepository {
 
   CollectionReference get _posts => _firebaseFirestore.collection(FirebaseConstants.postsCollection);
   CollectionReference get _comments => _firebaseFirestore.collection(FirebaseConstants.commentsCollection);
+  CollectionReference get _users => _firebaseFirestore.collection(FirebaseConstants.usersCollection);
 
   FutureVoid addPost(Post post) async {
     try {
@@ -36,6 +37,12 @@ class PostRepository {
     return _posts.where('communityName', whereIn: communities.map(
       (community) => community.name).toList())
       .orderBy('createdAt', descending: true).snapshots().map(
+        (event) => event.docs.map(
+          (e) => Post.fromMap(e.data() as Map<String, dynamic>)).toList());
+  }
+
+  Stream<List<Post>> fetchRandomPosts() {
+    return _posts.orderBy('createdAt', descending: true).snapshots().map(
         (event) => event.docs.map(
           (e) => Post.fromMap(e.data() as Map<String, dynamic>)).toList());
   }
@@ -91,7 +98,7 @@ class PostRepository {
   FutureVoid addComment(Comment comment) async {
     try {
       await _comments.doc(comment.id).set(comment.toMap());
-      return right(_posts.doc(comment.postId).set({
+      return right(_posts.doc(comment.postId).update({
         'commentCount': FieldValue.increment(1),
       }));
     } catch (e) {
@@ -103,6 +110,26 @@ class PostRepository {
     return _comments.where('postId', isEqualTo: postId)
       .orderBy('createdAt', descending: true).snapshots()
         .map((event) => event.docs.map((e) => Comment.fromMap(e.data() as Map<String, dynamic>)).toList());
+  }
+
+  FutureVoid awardPost(Post post, String award, String senderUid) async {
+    try {
+      _posts.doc(post.id).update({
+        'awards': FieldValue.arrayUnion([award]),
+      });
+
+      _users.doc(senderUid).update({
+        'awards': FieldValue.arrayRemove([award]),
+      });
+
+      return right(
+        _users.doc(post.userUid).update({
+          'awards': FieldValue.arrayUnion([award]),
+        }),
+      );
+    } catch (e) {
+      return left(Failure(e.toString()));
+    }
   }
 
 }

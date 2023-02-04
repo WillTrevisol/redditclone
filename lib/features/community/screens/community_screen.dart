@@ -19,6 +19,7 @@ class CommunityScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
 
     final user = ref.watch(userProvider)!;
+    final isGuest = !user.isAuthenticated;
 
     void navigateToModeratorTools() {
       Routemaster.of(context).push('/moderator-tools/$name');
@@ -71,27 +72,29 @@ class CommunityScreen extends ConsumerWidget {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          data.moderators.contains(user.uid) 
-                          ? OutlinedButton(
-                              onPressed: () => navigateToModeratorTools(),
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(horizontal: 25),
-                                side: BorderSide(
-                                  color: Colors.grey.shade700
-                                )
-                              ),
-                              child: const Text('Moderator Tools'),
-                            )
-                          : OutlinedButton(
-                              onPressed: () => joinOrLeaveCommunity(context, ref, data),
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(horizontal: 25),
-                                side: BorderSide(
-                                  color: Colors.grey.shade700
-                                )
-                              ),
-                              child: Text(data.members.contains(user.uid) ? 'Joined' : 'Join'),
-                            ),
+                          !isGuest ?
+                            data.moderators.contains(user.uid) 
+                            ? OutlinedButton(
+                                onPressed: () => navigateToModeratorTools(),
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(horizontal: 25),
+                                  side: BorderSide(
+                                    color: Colors.grey.shade700
+                                  )
+                                ),
+                                child: const Text('Moderator Tools'),
+                              )
+                            : OutlinedButton(
+                                onPressed: () => joinOrLeaveCommunity(context, ref, data),
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(horizontal: 25),
+                                  side: BorderSide(
+                                    color: Colors.grey.shade700
+                                  )
+                                ),
+                                child: Text(data.members.contains(user.uid) ? 'Joined' : 'Join'),
+                              ) :
+                              const SizedBox(),
                         ],
                       ),
                       Padding(

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/common/error_text.dart';
 import '../../../core/common/loading_widget.dart';
 import '../../../core/common/post_card.dart';
+import '../../auth/controller/auth_controller.dart';
 import '../controller/post_controller.dart';
 import '../widgets/comment_card.dart';
 
@@ -38,28 +39,33 @@ class _CommentScreenState extends ConsumerState<CommentScreen> {
 
   @override
   Widget build(BuildContext context) {
+
+    final user = ref.watch(userProvider)!;
+    final isGuest = !user.isAuthenticated;
+
     return Scaffold(
       body: ref.watch(getPostByIdProvider(widget.postId)).when(
         data: (data) {
           return Column(
             children: <Widget> [
               PostCard(post: data),
-              TextField(
-                onSubmitted: (value) => addComment(),
-                controller: commentController,
-                decoration: InputDecoration(
-                  hintText: 'Put your comments here :)',
-                  filled: true,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(25),
-                    borderSide: const BorderSide(
-                      width: 0,
-                      style: BorderStyle.none
-                    )
+              if(!isGuest)
+                TextField(
+                  onSubmitted: (value) => addComment(),
+                  controller: commentController,
+                  decoration: InputDecoration(
+                    hintText: 'Put your comments here :)',
+                    filled: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(25),
+                      borderSide: const BorderSide(
+                        width: 0,
+                        style: BorderStyle.none
+                      )
+                    ),
+                    contentPadding: const EdgeInsets.all(18)
                   ),
-                  contentPadding: const EdgeInsets.all(18)
                 ),
-              ),
               ref.watch(getPostCommentsProvider(widget.postId)).when(
                 data: (data) {
                   return Expanded(

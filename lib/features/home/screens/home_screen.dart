@@ -24,6 +24,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
 
     final user = ref.watch(userProvider)!;
+    final isGuest = !user.isAuthenticated;
     final currentTheme = ref.watch(themeNotifierProvider);
 
     void showSearcher() {
@@ -71,9 +72,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ],
       ),
       drawer: const CommunityListDrawer(),
-      endDrawer: const ProfileDrawer(),
+      endDrawer: isGuest ? null : const ProfileDrawer(),
       body: Constants.listWidgets[_page],
-      bottomNavigationBar: CupertinoTabBar(
+      bottomNavigationBar: isGuest ? null : CupertinoTabBar(
         activeColor: currentTheme.iconTheme.color,
         backgroundColor: currentTheme.appBarTheme.backgroundColor,
         items: const <BottomNavigationBarItem> [

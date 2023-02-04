@@ -36,4 +36,14 @@ class UserProfileRepository {
         .map((event) => event.docs.map((e) => Post.fromMap(e.data() as Map<String, dynamic>)).toList());
   }
 
+  FutureVoid updateUserKarma(UserModel user) async {
+    try {
+      return  right(await _users.doc(user.uid).update({
+        'karma':   user.karma,
+      }));
+    } catch (e) {
+      return left(Failure(e.toString()));
+    }
+  }
+
 }

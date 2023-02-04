@@ -1,7 +1,7 @@
 class UserModel {
 
   final String name;
-  final String email;
+  final String? email;
   final String profilePicture;
   final String banner;
   final String uid;
@@ -11,7 +11,7 @@ class UserModel {
 
   UserModel({
     required this.name,
-    required this.email,
+    this.email,
     required this.profilePicture,
     required this.banner,
     required this.uid,
@@ -58,7 +58,7 @@ class UserModel {
   factory UserModel.fromMap(Map<String, dynamic> map) {
     return UserModel(
       name: map['name'] as String,
-      email: map['email'] as String,
+      email: map['email'],
       profilePicture: map['profilePicture'] as String,
       banner: map['banner'] as String,
       uid: map['uid'] as String,

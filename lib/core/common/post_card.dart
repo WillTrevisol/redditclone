@@ -29,6 +29,10 @@ class PostCard extends ConsumerWidget {
     ref.read(postControllerProvider.notifier).downVote(post);
   }
 
+  void awardPost(BuildContext context, WidgetRef ref, Post post, String award) {
+    ref.read(postControllerProvider.notifier).awardPost(award: award, context: context, post: post);
+  }
+
   void navigateToUserProfile(BuildContext context) {
     Routemaster.of(context).push('/u/${post.userUid}');
   }
@@ -49,6 +53,7 @@ class PostCard extends ConsumerWidget {
     final bool isTypeText = post.type == 'text';
 
     final user = ref.watch(userProvider)!;
+    final isGuest = !user.isAuthenticated;
     final currentTheme = ref.watch(themeNotifierProvider);
 
     return Column(
@@ -116,6 +121,20 @@ class PostCard extends ConsumerWidget {
                                 ),
                             ],
                           ),
+                          if (post.awards.isNotEmpty) ...[
+                            const SizedBox(height: 5),
+                            SizedBox(
+                              height: 20,
+                              child: ListView.builder(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: post.awards.length,
+                                itemBuilder: (context, index) => Image.asset(
+                                  Constants.awards[post.awards[index]]!,
+                                  height: 20,
+                                ),
+                              ),
+                            ),
+                          ],
                           Padding(
                             padding: const EdgeInsets.only(top: 8.0),
                             child: Text(
@@ -132,7 +151,7 @@ class PostCard extends ConsumerWidget {
                               width: double.maxFinite,
                               child: Image.network(
                                 post.link ?? '',
-                                fit: BoxFit.cover,
+                                fit: BoxFit.fill,
                               ),
                             ),
 
@@ -143,6 +162,7 @@ class PostCard extends ConsumerWidget {
                               height: MediaQuery.of(context).size.height * 0.15,
                               width: MediaQuery.of(context).size.width * 0.9,
                               child: AnyLinkPreview(
+                                errorWidget: const Center(child: Text('Something gone wrong with the link :(')),
                                 displayDirection: UIDirection.uiDirectionHorizontal,
                                 link: post.link ?? '',
                               ),
@@ -165,7 +185,7 @@ class PostCard extends ConsumerWidget {
                                 Row(
                                   children: <Widget> [
                                     IconButton(
-                                      onPressed: () => upVotePost(ref), 
+                                      onPressed: () => isGuest ? null : upVotePost(ref), 
                                       icon: Icon(
                                         Constants.up,
                                         size: 30,
@@ -177,7 +197,7 @@ class PostCard extends ConsumerWidget {
                                       style: const TextStyle(fontSize: 17)
                                     ),
                                     IconButton(
-                                      onPressed: () => downVotePost(ref), 
+                                      onPressed: () => isGuest ? null : downVotePost(ref), 
                                       icon: Icon(
                                         Constants.down,
                                         size: 30,
@@ -211,6 +231,41 @@ class PostCard extends ConsumerWidget {
                                   },
                                   error: (error, stackTrace) => ErrorText(message: error.toString()),
                                   loading: () => const LoadingWidget(),
+                                ),
+                                IconButton(
+                                  onPressed: isGuest ? null : () {
+                                    showDialog(
+                                      context: context,
+                                      builder: (context) => Dialog(
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8),
+                                          child: GridView.builder(
+                                            shrinkWrap: true,
+                                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                              crossAxisCount: 4,
+                                            ),
+                                            itemCount: user.awards.length,
+                                            itemBuilder: (context, index) {
+                                              final award = user.awards[index];
+
+                                              return Builder(
+                                                builder: (context) {
+                                                  return GestureDetector(
+                                                    onTap: () => awardPost(context, ref, post, award),
+                                                    child: Padding(
+                                                      padding: const EdgeInsets.all(8.0),
+                                                      child: Image.asset(Constants.awards[award]!),
+                                                    ),
+                                                  );
+                                                }
+                                              );
+                                            }
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }, 
+                                  icon: const Icon(Icons.card_giftcard_rounded),
                                 ),
                               ],
                             ),

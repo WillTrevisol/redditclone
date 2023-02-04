@@ -5,12 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:routemaster/routemaster.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../core/enums/enums.dart';
 import '../../../core/providers/storage_repository_provider.dart';
 import '../../../core/utils.dart';
 import '../../../models/comment.dart';
 import '../../../models/community.dart';
 import '../../../models/post.dart';
 import '../../auth/controller/auth_controller.dart';
+import '../../user_profile/controller/user_profile_controller.dart';
 import '../repository/post_repository.dart';
 
 final postControllerProvider = StateNotifierProvider<PostController, bool>(
@@ -29,6 +31,13 @@ final fetchUserPostsProvider = StreamProvider.family(
   (StreamProviderRef ref, List<Community> communities) {
     final postController = ref.watch(postControllerProvider.notifier);
     return postController.fetchUserPosts(communities);
+  }
+);
+
+final fetchRandomPostsProvider = StreamProvider(
+  (StreamProviderRef ref) {
+    final postController = ref.watch(postControllerProvider.notifier);
+    return postController.fetchRandomPosts();
   }
 );
 
@@ -85,6 +94,7 @@ class PostController extends StateNotifier<bool>{
     );
 
     final response = await _postRepository.addPost(post);
+    _ref.read(userProfileControllerProvider.notifier).updateUserKarma(UserKarma.textPost);
     state = false;
 
     response.fold(
@@ -123,6 +133,7 @@ class PostController extends StateNotifier<bool>{
     );
 
     final response = await _postRepository.addPost(post);
+    _ref.read(userProfileControllerProvider.notifier).updateUserKarma(UserKarma.linkPost);
     state = false;
 
     response.fold(
@@ -171,6 +182,7 @@ class PostController extends StateNotifier<bool>{
       );
 
       final response = await _postRepository.addPost(post);
+      _ref.read(userProfileControllerProvider.notifier).updateUserKarma(UserKarma.imagePost);
       state = false;
 
       response.fold(
@@ -193,9 +205,14 @@ class PostController extends StateNotifier<bool>{
     return Stream.value([]);
   }
 
+  Stream<List<Post>> fetchRandomPosts() {
+    return _postRepository.fetchRandomPosts();
+  }
+
+
   void deletePost(BuildContext context, Post post) async {
     final response = await _postRepository.deletePost(post);
-
+    _ref.read(userProfileControllerProvider.notifier).updateUserKarma(UserKarma.deletePost);
     response.fold(
       (left) => showSnackBar(context, left.toString()),
       (right) => showSnackBar(context, 'Deleted post!'),
@@ -235,6 +252,8 @@ class PostController extends StateNotifier<bool>{
     );
 
     final response = await _postRepository.addComment(comment);
+    _ref.read(userProfileControllerProvider.notifier).updateUserKarma(UserKarma.comment);
+
 
     response.fold(
       (left) => showSnackBar(context, left.message), 
@@ -244,5 +263,28 @@ class PostController extends StateNotifier<bool>{
 
    Stream<List<Comment>> fetchPostComments(String postId) {
     return _postRepository.getCommentsOfPost(postId);
+  }
+
+  void awardPost({
+    required BuildContext context,
+    required Post post,
+    required String award,
+  }) async {
+
+    final user = _ref.read(userProvider)!;
+    final response = await _postRepository.awardPost(post, award, user.uid);
+
+    response.fold(
+      (left) => showSnackBar(context, left.toString()), 
+      (right) => () {
+        Routemaster.of(context).pop();
+        _ref.read(userProfileControllerProvider.notifier).updateUserKarma(UserKarma.awardPost);
+        _ref.read(userProvider.notifier).update((state) {
+          state?.awards.remove(award);
+          return state;
+        });
+      },
+    );
+
   }
 }

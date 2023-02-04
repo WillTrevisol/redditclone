@@ -9,6 +9,11 @@ import '../../../core/constants/constants.dart';
 class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
 
+
+  void signInAsGuest(BuildContext context, WidgetRef ref) {
+    ref.read(authControllerProvider.notifier).signInAsGuest(context);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
 
@@ -21,17 +26,17 @@ class LoginScreen extends ConsumerWidget {
           Constants.logoPath,
           height: 40,
         ),
-        actions: <Widget> [
-          TextButton(
-            onPressed: () {}, 
-            child: const Text(
-              'Skip',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          )
-        ],
+        // actions: <Widget> [
+        //   TextButton(
+        //     onPressed: () => signInAsGuest(context, ref),
+        //     child: const Text(
+        //       'Skip',
+        //       style: TextStyle(
+        //         fontWeight: FontWeight.bold,
+        //       ),
+        //     ),
+        //   )
+        // ],
       ),
       body: SingleChildScrollView(
         child: Column(
