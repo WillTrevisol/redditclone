@@ -1,5 +1,7 @@
 # redditclone
 
+This is a project made in a course.
+
 A new Flutter project.
 
 ## Getting Started
